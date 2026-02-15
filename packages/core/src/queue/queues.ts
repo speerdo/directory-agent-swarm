@@ -102,7 +102,7 @@ const QUEUE_CONFIGS: Record<QueueName, QueueConfig> = {
 export function createQueue(queueName: QueueName): Queue {
   const config = QUEUE_CONFIGS[queueName];
   return new Queue(queueName, {
-    connection: getConnectionOptions(),
+    connection: getConnectionOptions() as any, // Type cast due to ioredis version mismatch in lockfile
     defaultJobOptions: config.defaultJobOptions,
   });
 }
@@ -121,7 +121,7 @@ export function getQueue(queueName: QueueName): Queue {
 export function getQueueEvents(queueName: QueueName): QueueEvents {
   if (!queueEventsCache.has(queueName)) {
     queueEventsCache.set(queueName, new QueueEvents(queueName, {
-      connection: getConnectionOptions(),
+      connection: getConnectionOptions() as any, // Type cast due to ioredis version mismatch in lockfile
     }));
   }
   return queueEventsCache.get(queueName)!;

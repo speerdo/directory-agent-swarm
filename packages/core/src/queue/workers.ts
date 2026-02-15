@@ -43,7 +43,7 @@ export function createWorker(config: WorkerConfig): Worker {
       throw error;
     }
   }, {
-    connection: getConnectionOptions(),
+    connection: getConnectionOptions() as any, // Type cast due to ioredis version mismatch in lockfile
     concurrency: queueConfig.concurrency,
   });
 

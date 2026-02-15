@@ -35,9 +35,7 @@ npx swarm deploy <niche>
 docker-compose up -d
 
 # Run database migrations
-psql $SUPABASE_URL -f supabase/migrations/001_core_schema.sql
-psql $SUPABASE_URL -f supabase/migrations/002_pipeline_schema.sql
-psql $SUPABASE_URL -f supabase/migrations/003_cost_tracking.sql
+npx tsx scripts/neon-migrate.mjs
 
 # Seed database
 npx tsx scripts/seed-cities.ts
@@ -87,7 +85,7 @@ All AI calls go through `packages/core/src/ai/router.ts`:
 
 ### Database
 
-Supabase (PostgreSQL) with these core tables:
+Neon (PostgreSQL) with these core tables:
 - `cities` — 500+ US cities with lat/lng
 - `niches` — directory configurations
 - `businesses` — listings with status pipeline
@@ -110,7 +108,7 @@ Required in `.env`:
 - `GOOGLE_AI_API_KEY` — Gemini Flash
 - `GOOGLE_PLACES_API_KEY` — Business verification
 - `GOOGLE_CSE_ID`, `GOOGLE_CSE_API_KEY` — Business discovery
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `NEON_DB_API_URL` — Neon database connection string
 - `REDIS_URL` — BullMQ backend
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — Notifications
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID` — Site deployment

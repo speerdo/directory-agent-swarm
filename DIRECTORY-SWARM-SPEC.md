@@ -19,10 +19,10 @@
 
 | Layer | Technology | Why |
 |-------|-----------|-----|
-| **Language** | TypeScript (strict mode) | Owner is a Node.js developer. All SDKs (Alpaca, OpenRouter, Supabase) are TS-native. |
+| **Language** | TypeScript (strict mode) | Owner is a Node.js developer. All SDKs (Alpaca, OpenRouter, Neon) are TS-native. |
 | **Monorepo** | npm workspaces | Agents share core utils (AI router, DB client, types). Each agent is its own package. |
 | **Job Queue** | BullMQ (Redis-backed) | Reliable scheduling, retries, rate limiting, concurrency. Bull Board for monitoring dashboard. |
-| **Database** | Supabase (PostgreSQL) | Free tier (500MB). Shared instance across all directories. Real-time subscriptions for dashboard. |
+| **Database** | Neon (PostgreSQL) | Serverless PostgreSQL with connection pooling. 512MB storage on free tier.|
 | **AI Routing** | Custom `router.ts` (~100 lines) + OpenRouter API | One function: `callAI(task, messages)` → routes to correct model. OpenRouter gives unified API to 11 models. |
 | **Site Framework** | Astro (SSG mode) | Static site generation. Parameterized template reused across all niches. Excellent SEO defaults. |
 | **Site Hosting** | Vercel (free tier per site) | Already using for RecycleOldTech. One Vercel project per directory. 100K+ pageviews free. |
@@ -129,7 +129,7 @@ directory-swarm/
 │   │       │       ├── content.ts
 │   │       │       └── niche-research.ts
 │   │       ├── db/
-│   │       │   ├── client.ts              # Supabase client singleton
+│   │       │   ├── client.ts              # Neon client singleton
 │   │       │   ├── schema.ts              # TS types matching DB tables
 │   │       │   └── queries.ts             # Reusable query functions
 │   │       ├── apis/
@@ -573,10 +573,8 @@ GOOGLE_PLACES_API_KEY=...
 GOOGLE_CSE_ID=...
 GOOGLE_CSE_API_KEY=...
 
-# Supabase
-SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+# Neon
+NEON_DB_API_URL=postgresql://neondb_owner:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
 
 # Redis (local Docker or remote)
 REDIS_URL=redis://localhost:6379
@@ -630,7 +628,7 @@ VERCEL_ORG_ID=...
 
 ### Weekend 1: Foundation (~8-10h)
 - [ ] Init monorepo with npm workspaces + TypeScript strict config
-- [ ] Set up Supabase project + run 3 migration files
+- [ ] Set up Neon project + run 3 migration files
 - [ ] Build `packages/core/src/ai/router.ts` + `providers.ts`
 - [ ] Build `packages/core/src/db/client.ts` + `schema.ts`
 - [ ] Docker compose for local Redis
@@ -659,8 +657,8 @@ VERCEL_ORG_ID=...
 
 ### Weekend 5: Site Template + First Deploy (~6-8h)
 - [ ] Adapt RecycleOldTech Astro template → parameterized `sites/directory-template/`
-- [ ] Connect Astro to Supabase for data at build time (fetch businesses, content)
-- [ ] Build deploy script that: queries Supabase → builds Astro → deploys to Vercel
+- [ ] Connect Astro to Neon for data at build time (fetch businesses, content)
+- [ ] Build deploy script that: queries Neon → builds Astro → deploys to Vercel
 - [ ] Set up $6 DigitalOcean droplet for production agents
 - [ ] **Test:** Deploy mattress-recycling preview to Vercel
 
@@ -702,7 +700,7 @@ VERCEL_ORG_ID=...
 | Re-verification AI (monthly) | $3-5 |
 | Google Places API (overage) | $0-10 |
 | Vercel hosting (per site) | $0 (free tier) |
-| Supabase | $0 (free tier) |
+| Neon | $0 (free tier) |
 | **Total Monthly** | **$9-21** |
 
 ---

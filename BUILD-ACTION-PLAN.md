@@ -20,11 +20,11 @@ The following bugs and improvements were found during a code review of the Weeke
 - [x] **`router.ts`** — Google handler had no-op `model.replace('gemini-', 'gemini-')` and flattened all messages into one string (losing system/user role distinction). Fixed to use Gemini's `systemInstruction` parameter and extract usage metadata for cost tracking.
 - [x] **`seed-cities.ts`** — Scottsdale, AZ was listed twice (duplicate entry). Removed duplicate.
 - [x] **`seed-niche-config.ts`** — Leading space in search query `' debris disposal {city}'`. Fixed to `'debris disposal {city}'`.
-- [x] **`db/client.ts`** — `getSupabaseClient()` silently escalated to service role key when available, making it identical to `getSupabaseAdmin()`. Fixed to always use anon key.
+- [x] **`db/client.ts`** — `getNeonClient()` silently escalated to service role key when available, making it identical to `getNeonAdmin()`. Fixed to always use anon key.
 
 ### Design Improvements
 - [x] **`router.ts`** — `callAI()` now automatically tracks costs via `trackCost()` (fire-and-forget). Added `nicheId` and `agent` fields to `CallAIOptions` for tracking context. No more manual cost tracking needed per call.
-- [x] **`db/client.ts`** — `getSupabaseAdmin()` now caches its client as a singleton (was creating a new client on every call).
+- [x] **`db/client.ts`** — `getNeonAdmin()` now caches its client as a singleton (was creating a new client on every call).
 - [x] **`providers.ts`** — Replaced `createRequire` hack with proper ESM imports for `@anthropic-ai/sdk` and `@google/generative-ai`. Full type safety restored.
 - [x] **`workers.ts`** — `getQueueStats()` now returns real queue counts from BullMQ instead of hardcoded zeros.
 - [x] **`queue/connection.ts`** — New shared module. Single ioredis connection used by both queues and workers (eliminates duplicated `getConnectionOptions()`).
@@ -49,8 +49,8 @@ The following bugs and improvements were found during a code review of the Weeke
 - [x] Create directory structure: `packages/core`, `packages/agents/*`, `packages/sites`, `packages/cli`, `scripts`
 - [x] Install shared dev dependencies: `typescript`, `tsx`, `@types/node`
 
-### 1.2 Set Up Supabase
-- [ ] Create Supabase project (free tier)
+### 1.2 Set Up Neon
+- [ ] Create Neon project (free tier)
 - [ ] Run `supabase/migrations/001_core_schema.sql`
 - [ ] Run `supabase/migrations/002_pipeline_schema.sql`
 - [ ] Run `supabase/migrations/003_cost_tracking.sql`
@@ -81,7 +81,7 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] Verify US-hosted routing works (check response headers or latency from Fireworks)
 
 ### 1.4 Build Core Database Layer
-- [x] Build `packages/core/src/db/client.ts` — Supabase client singletons (anon + admin, both cached)
+- [x] Build `packages/core/src/db/client.ts` — Neon client singletons (anon + admin, both cached)
 - [x] Build `packages/core/src/db/schema.ts` — TypeScript types matching DB tables (Zod schemas for runtime validation)
 - [x] Build `packages/core/src/db/queries.ts` — reusable query functions (insert business, update status, fetch by niche/city, cost aggregation, etc.)
 
@@ -112,7 +112,7 @@ The following bugs and improvements were found during a code review of the Weeke
 
 ### 1.9 Test Foundation
 - [ ] Test: Call each model via router, verify responses return valid text
-- [ ] Test: Insert and query a business record in Supabase
+- [ ] Test: Insert and query a business record in Neon
 - [ ] Test: Enqueue a BullMQ job, process it in a worker, verify completion
 - [ ] Test: Cost tracker logs a usage record to `ai_usage` table (should happen automatically via router)
 - [ ] Test: Rate limiter correctly throttles when limit exceeded
@@ -130,7 +130,7 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] Build `packages/agents/niche-researcher/src/opportunity-score.ts` — multi-factor scoring (1-100): search volume × weak competition × strong monetization
 - [ ] Build `packages/agents/niche-researcher/src/report-generator.ts` — human-readable opportunity report
 - [ ] Build `packages/agents/niche-researcher/src/index.ts` — agent entry point + BullMQ worker
-- [ ] Add `niche_opportunities` table to Supabase (or add to existing migration) for storing research results
+- [ ] Add `niche_opportunities` table to Neon (or add to existing migration) for storing research results
 
 ### 2.2 Build Discovery Agent
 - [ ] Create `packages/agents/discovery/package.json`
@@ -279,8 +279,8 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] Add `ads.txt` placeholder (needed for future ad network approval)
 - [ ] Inject JSON-LD structured data from `schema_json` field into each business card
 
-### 5.2 Connect Astro to Supabase
-- [ ] Add Supabase client to Astro (build-time only, no runtime)
+### 5.2 Connect Astro to Neon
+- [ ] Add Neon client to Astro (build-time only, no runtime)
 - [ ] Query businesses by niche at build time (WHERE niche_id = X AND status = 'enriched')
 - [ ] Query content (city pages, blog posts) at build time
 - [ ] Implement getStaticPaths for `[state]/[city]` dynamic routes
@@ -289,10 +289,10 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] Pass niche display_name and config to templates for parameterized branding
 
 ### 5.3 Build Deploy System
-- [ ] Build deploy script: queries Supabase → builds Astro → deploys to Vercel
+- [ ] Build deploy script: queries Neon → builds Astro → deploys to Vercel
 - [ ] Parameterize deploy script to accept niche_id (builds correct data for that niche)
 - [ ] Set up Vercel project for directory-template
-- [ ] Configure Vercel environment variables (SUPABASE_URL, SUPABASE_ANON_KEY, NICHE_ID)
+- [ ] Configure Vercel environment variables (NEON_DB_API_URL, NICHE_ID)
 - [ ] Implement preview deployments (`swarm deploy <niche> --preview`)
 - [ ] Implement production deployments (`swarm deploy <niche> --production`)
 
@@ -399,5 +399,5 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] **AI model returns malformed JSON** — Zod validation on all AI outputs. Retry with stricter prompt on failure.
 - [ ] **MiniMax M2.5 is brand new (Feb 2026)** — Have DeepSeek V3.2 as fallback in MODEL_MAP. Can swap with one line change.
 - [ ] **OpenRouter outage** — Direct API fallbacks for critical models (Claude via Anthropic, Gemini via Google).
-- [ ] **Supabase free tier limits** — 500MB storage, 2GB bandwidth. Monitor with `SELECT pg_database_size('postgres')`.
+- [ ] **Neon free tier limits** — 500MB storage, 2GB bandwidth. Monitor with `SELECT pg_database_size('postgres')`.
 - [ ] **Vercel deploy rate limits** — 100 deploys/day on free tier. Deploy only when content changes, not on every pipeline run.

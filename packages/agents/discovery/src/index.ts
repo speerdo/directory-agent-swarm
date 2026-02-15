@@ -113,7 +113,6 @@ const worker = new Worker<DiscoveryJob>(
     }
   },
   {
-    // @ts-expect-error - BullMQ connection type mismatch
     connection,
     concurrency: 5,
     limiter: {
@@ -137,13 +136,11 @@ worker.on('error', (error) => {
 
 // Queue for scheduling jobs
 export const discoveryQueue = new Queue<DiscoveryJob>('discovery', {
-  // @ts-expect-error - BullMQ connection type mismatch
   connection,
 });
 
 // Helper to enqueue discovery jobs
 export async function enqueueDiscoveryJob(nicheId: string, cityId: number): Promise<void> {
-  // @ts-expect-error - BullMQ type mismatch
   await discoveryQueue.add('discover', {
     nicheId,
     cityId,
@@ -169,7 +166,6 @@ export async function enqueueDiscoveryForCities(
     },
   }));
 
-  // @ts-expect-error - BullMQ type mismatch
   await discoveryQueue.addBulk(jobs);
 
   logger.info({ nicheId, cityCount: cityIds.length }, 'Enqueued batch discovery jobs');

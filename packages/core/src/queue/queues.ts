@@ -102,7 +102,6 @@ const QUEUE_CONFIGS: Record<QueueName, QueueConfig> = {
 export function createQueue(queueName: QueueName): Queue {
   const config = QUEUE_CONFIGS[queueName];
   return new Queue(queueName, {
-    // @ts-expect-error - BullMQ connection type mismatch
     connection: getConnectionOptions(),
     defaultJobOptions: config.defaultJobOptions,
   });
@@ -122,7 +121,6 @@ export function getQueue(queueName: QueueName): Queue {
 export function getQueueEvents(queueName: QueueName): QueueEvents {
   if (!queueEventsCache.has(queueName)) {
     queueEventsCache.set(queueName, new QueueEvents(queueName, {
-      // @ts-expect-error - BullMQ connection type mismatch
       connection: getConnectionOptions(),
     }));
   }

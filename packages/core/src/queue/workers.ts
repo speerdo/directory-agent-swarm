@@ -43,7 +43,6 @@ export function createWorker(config: WorkerConfig): Worker {
       throw error;
     }
   }, {
-    // @ts-expect-error - BullMQ connection type mismatch
     connection: getConnectionOptions(),
     concurrency: queueConfig.concurrency,
   });

@@ -48,9 +48,6 @@ export async function researchNiche(nicheId: string, nicheName: string): Promise
   const supabase = getSupabaseAdmin();
   const { error } = await supabase.from('niches').update({
     opportunity_score: opportunityScore.totalScore,
-    config: {
-      // Merge with existing config
-    },
   }).eq('id', nicheId);
 
   if (error) {
@@ -87,7 +84,6 @@ const worker = new Worker<NicheResearchJob>(
     }
   },
   {
-    // @ts-expect-error - BullMQ connection type mismatch
     connection,
     concurrency: 2, // Process 2 niche research jobs at a time
     limiter: {

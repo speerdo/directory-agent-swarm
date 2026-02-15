@@ -17,7 +17,6 @@ export * from './utils/cost-tracker.js';
 export * from './apis/google-places.js';
 export * from './apis/google-search.js';
 export * from './apis/serp.js';
-export * from './apis/serp.js';
 
 // Queue
 export * from './queue/connection.js';

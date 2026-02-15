@@ -9,28 +9,38 @@ export interface DedupeResult {
   similarity: number;
 }
 
-let businessCache: { id: string; name: string; city_id: number }[] = [];
-let lastCacheRefresh = 0;
+interface CacheEntry {
+  businesses: { id: string; name: string; city_id: number }[];
+  fuse: Fuse<{ id: string; name: string; city_id: number }> | null;
+  lastRefresh: number;
+}
+
 const CACHE_TTL = 5 * 60 * 1000;
+const cacheMap = new Map<string, CacheEntry>();
 
-let fuse: Fuse<{ id: string; name: string; city_id: number }> | null = null;
+function getCacheKey(nicheId: string, cityId: number): string {
+  return `${nicheId}:${cityId}`;
+}
 
-function getFuseInstance() {
-  if (!fuse) {
-    fuse = new Fuse(businessCache, {
+function getFuseInstance(entry: CacheEntry): Fuse<{ id: string; name: string; city_id: number }> {
+  if (!entry.fuse) {
+    entry.fuse = new Fuse(entry.businesses, {
       keys: ['name'],
       threshold: 0.3,
       includeScore: true,
       ignoreLocation: true,
     });
   }
-  return fuse;
+  return entry.fuse;
 }
 
-async function refreshCache(nicheId: string, cityIds: number[]): Promise<void> {
+async function refreshCache(nicheId: string, cityIds: number[]): Promise<CacheEntry> {
+  const key = getCacheKey(nicheId, cityIds[0]);
+  const existing = cacheMap.get(key);
   const now = Date.now();
-  if (now - lastCacheRefresh < CACHE_TTL && businessCache.length > 0) {
-    return;
+
+  if (existing && now - existing.lastRefresh < CACHE_TTL && existing.businesses.length > 0) {
+    return existing;
   }
 
   const supabase = getSupabaseAdmin();
@@ -39,19 +49,22 @@ async function refreshCache(nicheId: string, cityIds: number[]): Promise<void> {
     .from('businesses')
     .select('id, name, city_id')
     .eq('niche_id', nicheId)
-    .in('city_id', cityIds)
-    .eq('status', 'discovered');
+    .in('city_id', cityIds);
 
   if (error) {
     logger.error({ nicheId, error }, 'Failed to refresh business cache');
-    return;
+    return existing ?? { businesses: [], fuse: null, lastRefresh: now };
   }
 
-  businessCache = data ?? [];
-  lastCacheRefresh = now;
-  fuse = null;
+  const entry: CacheEntry = {
+    businesses: data ?? [],
+    fuse: null,
+    lastRefresh: now,
+  };
+  cacheMap.set(key, entry);
 
-  logger.info({ count: businessCache.length }, 'Business cache refreshed');
+  logger.info({ nicheId, cityId: cityIds[0], count: entry.businesses.length }, 'Business cache refreshed');
+  return entry;
 }
 
 export async function checkDuplicate(
@@ -59,9 +72,9 @@ export async function checkDuplicate(
   nicheId: string,
   cityId: number
 ): Promise<DedupeResult> {
-  await refreshCache(nicheId, [cityId]);
+  const entry = await refreshCache(nicheId, [cityId]);
 
-  const fuseInstance = getFuseInstance();
+  const fuseInstance = getFuseInstance(entry);
   const results = fuseInstance.search(name);
 
   if (results.length > 0) {
@@ -88,10 +101,10 @@ export async function checkDuplicates(
   nicheId: string,
   cityId: number
 ): Promise<Map<string, DedupeResult>> {
-  await refreshCache(nicheId, [cityId]);
+  const entry = await refreshCache(nicheId, [cityId]);
 
   const results = new Map<string, DedupeResult>();
-  const fuseInstance = getFuseInstance();
+  const fuseInstance = getFuseInstance(entry);
 
   for (const business of businesses) {
     const matches = fuseInstance.search(business.name);

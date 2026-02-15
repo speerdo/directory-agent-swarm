@@ -21,7 +21,7 @@ export async function closeRedisConnection(): Promise<void> {
   }
 }
 
-// Get connection options for BullMQ (just pass the URL string)
-export function getConnectionOptions(): string {
-  return getRedisUrl();
+// BullMQ requires an ioredis instance for its connection option
+export function getConnectionOptions(): Redis {
+  return getRedisConnection();
 }

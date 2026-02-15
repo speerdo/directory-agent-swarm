@@ -116,16 +116,23 @@ function extractFromTitles(results: SearchResult[]): ParsedBusiness[] {
   return businesses;
 }
 
-// Parse results from multiple queries and deduplicate
+// Parse results from multiple queries and deduplicate within the batch
 export async function parseAllSearchResults(
   queryResults: Map<string, SearchResult[]>,
   niche: string
 ): Promise<ParsedBusiness[]> {
   const allBusinesses: ParsedBusiness[] = [];
+  const seenNames = new Set<string>();
 
   for (const [query, results] of queryResults) {
     const businesses = await extractBusinessNames(results, niche);
-    allBusinesses.push(...businesses);
+    for (const business of businesses) {
+      const normalizedName = business.name.toLowerCase().trim();
+      if (!seenNames.has(normalizedName)) {
+        seenNames.add(normalizedName);
+        allBusinesses.push(business);
+      }
+    }
   }
 
   return allBusinesses;

@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from '../packages/core/src/db/client.js';
+import { getDb } from '../packages/core/src/db/client.js';
 import { createLogger } from '../packages/core/src/utils/logger.js';
 
 const logger = createLogger('seed-niche-config');
@@ -114,12 +114,12 @@ const NICHE_CONFIGS = [
 ];
 
 async function seedNicheConfigs() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   logger.info({ count: NICHE_CONFIGS.length }, 'Seeding niche configs');
 
   for (const niche of NICHE_CONFIGS) {
-    const { error } = await supabase.from('niches').upsert({
+    const { error } = await db.from('niches').upsert({
       id: niche.id,
       display_name: niche.display_name,
       status: niche.status,

@@ -238,7 +238,7 @@ directory-swarm/
 │           │   └── report.ts              # swarm report daily / swarm report cost
 │           └── telegram-bot.ts            # Same commands via Telegram messages
 │
-├── supabase/
+├── database/
 │   └── migrations/
 │       ├── 001_core_schema.sql
 │       ├── 002_pipeline_schema.sql
@@ -574,7 +574,7 @@ GOOGLE_CSE_ID=...
 GOOGLE_CSE_API_KEY=...
 
 # Neon
-NEON_DB_API_URL=postgresql://neondb_owner:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
+NEON_DB_CONNECTION_STRING=postgresql://neondb_owner:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require
 
 # Redis (local Docker or remote)
 REDIS_URL=redis://localhost:6379
@@ -595,7 +595,7 @@ VERCEL_ORG_ID=...
 ```json
 {
   "dependencies": {
-    "@supabase/supabase-js": "^2",
+    "@database/database-js": "^2",
     "openai": "^4",
     "@anthropic-ai/sdk": "^0.30",
     "@google/generative-ai": "^0.20",

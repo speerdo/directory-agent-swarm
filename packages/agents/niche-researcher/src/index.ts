@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { getRedisConnection } from '@agent-swarm/core';
 import { createLogger } from '@agent-swarm/core';
-import { getSupabaseAdmin } from '@agent-swarm/core';
+import { getDb } from '@agent-swarm/core';
 
 import { analyzeNicheTrends, expandNicheKeywords } from './search-strategy.js';
 import { scanCompetitors } from './competitor-scan.js';
@@ -45,8 +45,8 @@ export async function researchNiche(nicheId: string, nicheName: string): Promise
   const summary = formatReportAsSummary(report);
 
   // Step 5: Save to database
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from('niches').update({
+  const db = getDb();
+  const { error } = await db.from('niches').update({
     opportunity_score: opportunityScore.totalScore,
   }).eq('id', nicheId);
 
@@ -125,8 +125,8 @@ export async function runNicheResearch(nicheName: string): Promise<NicheResearch
   const nicheId = nicheName.toLowerCase().replace(/\s+/g, '-');
 
   // Check if niche exists in DB
-  const supabase = getSupabaseAdmin();
-  const { data: existing } = await supabase
+  const db = getDb();
+  const { data: existing } = await db
     .from('niches')
     .select('id')
     .eq('id', nicheId)
@@ -134,7 +134,7 @@ export async function runNicheResearch(nicheName: string): Promise<NicheResearch
 
   if (!existing) {
     // Create new niche entry
-    await supabase.from('niches').insert({
+    await db.from('niches').insert({
       id: nicheId,
       display_name: nicheName,
       status: 'researching',

@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js';
-import { getSupabaseAdmin, createLogger } from '@agent-swarm/core';
+import { getDb, createLogger } from '@agent-swarm/core';
 
 const logger = createLogger('deduplicator');
 
@@ -43,9 +43,9 @@ async function refreshCache(nicheId: string, cityIds: number[]): Promise<CacheEn
     return existing;
   }
 
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('businesses')
     .select('id, name, city_id')
     .eq('niche_id', nicheId)

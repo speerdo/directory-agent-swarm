@@ -16,6 +16,7 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@types/node": "^22.19.11",
     "tsx": "^4.19.0",
     "turbo": "^2.0.0",

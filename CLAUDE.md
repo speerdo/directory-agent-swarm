@@ -108,7 +108,7 @@ Required in `.env`:
 - `GOOGLE_AI_API_KEY` — Gemini Flash
 - `GOOGLE_PLACES_API_KEY` — Business verification
 - `GOOGLE_CSE_ID`, `GOOGLE_CSE_API_KEY` — Business discovery
-- `NEON_DB_API_URL` — Neon database connection string
+- `NEON_DB_CONNECTION_STRING` — Neon database connection string
 - `REDIS_URL` — BullMQ backend
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` — Notifications
 - `VERCEL_TOKEN`, `VERCEL_ORG_ID` — Site deployment

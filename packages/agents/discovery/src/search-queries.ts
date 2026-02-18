@@ -1,4 +1,4 @@
-import { getSupabaseAdmin, createLogger } from '@agent-swarm/core';
+import { getDb, createLogger } from '@agent-swarm/core';
 
 const logger = createLogger('search-queries');
 
@@ -12,10 +12,10 @@ export async function generateSearchQueries(
   nicheId: string,
   cityId: number
 ): Promise<SearchQuery[]> {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   // Get niche config
-  const { data: niche, error: nicheError } = await supabase
+  const { data: niche, error: nicheError } = await db
     .from('niches')
     .select('config, display_name')
     .eq('id', nicheId)
@@ -27,7 +27,7 @@ export async function generateSearchQueries(
   }
 
   // Get city info
-  const { data: city, error: cityError } = await supabase
+  const { data: city, error: cityError } = await db
     .from('cities')
     .select('name, state_code')
     .eq('id', cityId)

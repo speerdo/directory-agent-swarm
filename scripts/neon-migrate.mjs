@@ -1,4 +1,6 @@
-import https from 'https';
+import { neon } from '@neondatabase/serverless';
+
+const sql = neon(process.env.NEON_DB_CONNECTION_STRING);
 
 const statements = [
   `CREATE INDEX IF NOT EXISTS idx_cities_state ON cities(state_code);`,
@@ -100,70 +102,10 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS idx_ai_usage_date ON ai_usage(created_at);`
 ];
 
-function runSql(sql) {
-  return new Promise((resolve, reject) => {
-    const projectId = process.env.NEON_PROJECT_ID;
-    const branchId = process.env.NEON_BRANCH_ID || 'main';
-    const apiKey = process.env.NEON_API_KEY;
-
-    if (!projectId || !apiKey) {
-      reject(new Error('Missing required environment variables: NEON_PROJECT_ID and NEON_API_KEY'));
-      return;
-    }
-
-    const data = JSON.stringify({
-      jsonrpc: '2.0',
-      id: Math.floor(Math.random() * 10000),
-      method: 'tools/call',
-      params: {
-        name: 'run_sql',
-        arguments: {
-          projectId,
-          branchId,
-          sql: sql
-        }
-      }
-    });
-
-    const options = {
-      hostname: 'mcp.neon.tech',
-      path: '/mcp',
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json, text/event-stream',
-        'Content-Length': data.length
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
-        const lines = body.split('\n');
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const json = JSON.parse(line.slice(6));
-              if (json.error) reject(json.error);
-              else resolve(json);
-            } catch(e) {}
-          }
-        }
-        resolve(null);
-      });
-    });
-    req.on('error', reject);
-    req.write(data);
-    req.end();
-  });
-}
-
 async function main() {
   let completed = 0;
-  for (const sql of statements) {
-    await runSql(sql);
+  for (const statement of statements) {
+    await sql.query(statement);
     completed++;
     console.log(completed + '/' + statements.length + ' done');
   }

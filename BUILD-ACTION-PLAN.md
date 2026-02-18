@@ -50,12 +50,12 @@ The following bugs and improvements were found during a code review of the Weeke
 - [x] Install shared dev dependencies: `typescript`, `tsx`, `@types/node`
 
 ### 1.2 Set Up Neon
-- [ ] Create Neon project (free tier)
-- [ ] Run `supabase/migrations/001_core_schema.sql`
-- [ ] Run `supabase/migrations/002_pipeline_schema.sql`
-- [ ] Run `supabase/migrations/003_cost_tracking.sql`
-- [ ] Verify all tables created: `cities`, `niches`, `businesses`, `pipeline_jobs`, `approval_queue`, `content`, `ai_usage`
-- [ ] Verify all indexes created (check `idx_businesses_niche_city`, `idx_businesses_status`, `idx_ai_usage_niche`, etc.)
+- [x] Create Neon project (free tier)
+- [x] Run `neon/migrations/001_core_schema.sql` (via neon-migrate.mjs)
+- [x] Run `neon/migrations/002_pipeline_schema.sql` (via neon-migrate.mjs)
+- [x] Run `neon/migrations/003_cost_tracking.sql` (via neon-migrate.mjs)
+- [x] Verify all tables created: `cities`, `niches`, `businesses`, `pipeline_jobs`, `approval_queue`, `content`, `ai_usage`
+- [x] Verify all indexes created (check `idx_businesses_niche_city`, `idx_businesses_status`, `idx_ai_usage_niche`, etc.)
 
 ### 1.3 Build Core AI Layer
 - [x] Build `packages/core/src/ai/providers.ts` — OpenRouter, Anthropic, Google clients (uses proper ESM imports)
@@ -89,30 +89,30 @@ The following bugs and improvements were found during a code review of the Weeke
 - [x] Build `packages/core/src/utils/logger.ts` — structured logging with pino
 - [x] Build `packages/core/src/utils/rate-limiter.ts` — per-API rate limiting (Google CSE: 100/day, Places: varies, OpenRouter: per-model)
 - [x] Build `packages/core/src/utils/cost-tracker.ts` — track AI spend per agent per niche, writes to `ai_usage` table (auto-called by router)
-- [x] Install core dependencies: `@supabase/supabase-js`, `@anthropic-ai/sdk`, `@google/generative-ai`, `bullmq`, `ioredis`, `pino`, `zod`, `fuse.js`
+- [x] Install core dependencies: `@database/database-js`, `@anthropic-ai/sdk`, `@google/generative-ai`, `bullmq`, `ioredis`, `pino`, `zod`, `fuse.js`
 
 ### 1.6 Build Core API Wrappers
 - [x] Build `packages/core/src/apis/google-places.ts` — Places API: text search, get details, get reviews
 - [x] Build `packages/core/src/apis/google-search.ts` — Custom Search API wrapper with quota tracking
-- [ ] Build `packages/core/src/apis/serp.ts` — SerpAPI fallback if CSE quota exceeded
+- [x] Build `packages/core/src/apis/serp.ts` — SerpAPI fallback if CSE quota exceeded
 
 ### 1.7 Set Up Redis & Queue Infrastructure
 - [x] Build `packages/core/src/queue/connection.ts` — shared ioredis singleton connection
 - [x] Build `packages/core/src/queue/queues.ts` — queue definitions per agent (uses shared connection)
 - [x] Build `packages/core/src/queue/workers.ts` — worker registration + concurrency config + real `getQueueStats()`
-- [ ] Verify BullMQ can connect to Redis (`docker-compose up -d` then test)
+- [x] Verify BullMQ can connect to Redis (`docker-compose up -d` then test)
 - [ ] Set up Bull Board dashboard for queue monitoring (optional but helpful)
 
 ### 1.8 Seed Database
 - [x] Build `scripts/seed-cities.ts` — load 162 US cities with state, population, lat/lng (expand to 500+ later)
-- [ ] Run seed-cities.ts
-- [ ] Verify cities table populated
+- [x] Run seed-cities.ts
+- [x] Verify cities table populated
 - [x] Build `scripts/seed-niche-config.ts` — 5 niche templates with query templates + service flags
-- [ ] Run seed-niche-config.ts
+- [x] Run seed-niche-config.ts
 
 ### 1.9 Test Foundation
 - [ ] Test: Call each model via router, verify responses return valid text
-- [ ] Test: Insert and query a business record in Neon
+- [x] Test: Insert and query a business record in Neon
 - [ ] Test: Enqueue a BullMQ job, process it in a worker, verify completion
 - [ ] Test: Cost tracker logs a usage record to `ai_usage` table (should happen automatically via router)
 - [ ] Test: Rate limiter correctly throttles when limit exceeded
@@ -124,21 +124,21 @@ The following bugs and improvements were found during a code review of the Weeke
 **Goal:** Build first two agents that find and research business opportunities
 
 ### 2.1 Build Niche Researcher Agent
-- [ ] Create `packages/agents/niche-researcher/package.json`
-- [ ] Build `packages/agents/niche-researcher/src/search-strategy.ts` — Google Trends + keyword analysis
-- [ ] Build `packages/agents/niche-researcher/src/competitor-scan.ts` — find existing directories, grade quality (coverage, freshness, UX, mobile, SEO)
-- [ ] Build `packages/agents/niche-researcher/src/opportunity-score.ts` — multi-factor scoring (1-100): search volume × weak competition × strong monetization
-- [ ] Build `packages/agents/niche-researcher/src/report-generator.ts` — human-readable opportunity report
-- [ ] Build `packages/agents/niche-researcher/src/index.ts` — agent entry point + BullMQ worker
+- [x] Create `packages/agents/niche-researcher/package.json`
+- [x] Build `packages/agents/niche-researcher/src/search-strategy.ts` — Google Trends + keyword analysis
+- [x] Build `packages/agents/niche-researcher/src/competitor-scan.ts` — find existing directories, grade quality (coverage, freshness, UX, mobile, SEO)
+- [x] Build `packages/agents/niche-researcher/src/opportunity-score.ts` — multi-factor scoring (1-100): search volume × weak competition × strong monetization
+- [x] Build `packages/agents/niche-researcher/src/report-generator.ts` — human-readable opportunity report
+- [x] Build `packages/agents/niche-researcher/src/index.ts` — agent entry point + BullMQ worker
 - [ ] Add `niche_opportunities` table to Neon (or add to existing migration) for storing research results
 
 ### 2.2 Build Discovery Agent
-- [ ] Create `packages/agents/discovery/package.json`
-- [ ] Build `packages/agents/discovery/src/search-queries.ts` — generate niche-specific search queries (6 queries per city, loaded from niche config)
-- [ ] Build `packages/agents/discovery/src/result-parser.ts` — extract business names from search results using Gemma 3
-- [ ] Build `packages/agents/discovery/src/deduplicator.ts` — fuzzy match against existing DB entries (fuse.js + optional geocoding distance check)
-- [ ] Build `packages/agents/discovery/src/index.ts` — agent entry + BullMQ worker
-- [ ] Integrate `packages/core/src/apis/google-search.ts` for CSE calls
+- [x] Create `packages/agents/discovery/package.json`
+- [x] Build `packages/agents/discovery/src/search-queries.ts` — generate niche-specific search queries (6 queries per city, loaded from niche config)
+- [x] Build `packages/agents/discovery/src/result-parser.ts` — extract business names from search results using Gemma 3
+- [x] Build `packages/agents/discovery/src/deduplicator.ts` — fuzzy match against existing DB entries (fuse.js + optional geocoding distance check)
+- [x] Build `packages/agents/discovery/src/index.ts` — agent entry + BullMQ worker
+- [x] Integrate `packages/core/src/apis/google-search.ts` for CSE calls
 
 ### 2.3 Set Up Agent Infrastructure
 - [ ] Configure BullMQ queues for niche-researcher
@@ -292,7 +292,7 @@ The following bugs and improvements were found during a code review of the Weeke
 - [ ] Build deploy script: queries Neon → builds Astro → deploys to Vercel
 - [ ] Parameterize deploy script to accept niche_id (builds correct data for that niche)
 - [ ] Set up Vercel project for directory-template
-- [ ] Configure Vercel environment variables (NEON_DB_API_URL, NICHE_ID)
+- [ ] Configure Vercel environment variables (NEON_DB_CONNECTION_STRING, NICHE_ID)
 - [ ] Implement preview deployments (`swarm deploy <niche> --preview`)
 - [ ] Implement production deployments (`swarm deploy <niche> --production`)
 

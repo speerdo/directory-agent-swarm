@@ -1,5 +1,5 @@
 import { Worker, Queue } from 'bullmq';
-import { getRedisConnection, getSupabaseAdmin, createLogger, searchGoogle, batchSearch } from '@agent-swarm/core';
+import { getRedisConnection, getDb, createLogger, searchGoogle, batchSearch } from '@agent-swarm/core';
 
 import { generateSearchQueries, type SearchQuery } from './search-queries.js';
 import { extractBusinessNames, parseAllSearchResults } from './result-parser.js';
@@ -37,8 +37,8 @@ export async function discoverBusinesses(
   logger.info({ nicheId, cityId }, 'Search queries executed');
 
   // Step 3: Get niche name for parsing
-  const supabase = getSupabaseAdmin();
-  const { data: niche } = await supabase
+  const db = getDb();
+  const { data: niche } = await db
     .from('niches')
     .select('display_name')
     .eq('id', nicheId)
@@ -55,7 +55,7 @@ export async function discoverBusinesses(
   logger.info({ nicheId, cityId, uniqueCount: uniqueBusinesses.length }, 'Deduplication complete');
 
   // Step 6: Insert into database
-  const { data: city } = await supabase
+  const { data: city } = await db
     .from('cities')
     .select('id')
     .eq('id', cityId)
@@ -71,7 +71,7 @@ export async function discoverBusinesses(
       confidence: b.confidence,
     }));
 
-    const { error: insertError } = await supabase
+    const { error: insertError } = await db
       .from('businesses')
       .insert(businessRecords);
 

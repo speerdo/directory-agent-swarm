@@ -1,4 +1,4 @@
-import { getSupabaseAdmin } from '../packages/core/src/db/client.js';
+import { getDb } from '../packages/core/src/db/client.js';
 import { createLogger } from '../packages/core/src/utils/logger.js';
 
 const logger = createLogger('seed-cities');
@@ -170,7 +170,7 @@ const CITIES = [
 }));
 
 async function seedCities() {
-  const supabase = getSupabaseAdmin();
+  const db = getDb();
 
   logger.info({ count: CITIES.length }, 'Seeding cities');
 
@@ -179,7 +179,7 @@ async function seedCities() {
   for (let i = 0; i < CITIES.length; i += batchSize) {
     const batch = CITIES.slice(i, i + batchSize);
 
-    const { error } = await supabase.from('cities').upsert(batch, {
+    const { error } = await db.from('cities').upsert(batch, {
       onConflict: 'name,state_code',
     });
 

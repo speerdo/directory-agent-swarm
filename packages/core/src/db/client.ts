@@ -8,9 +8,9 @@ export function getDatabase() {
     return _pool;
   }
 
-  const connectionString = process.env.NEON_DB_API_URL;
+  const connectionString = process.env.NEON_DB_CONNECTION_STRING;
   if (!connectionString) {
-    throw new Error('NEON_DB_API_URL is required');
+    throw new Error('NEON_DB_CONNECTION_STRING is required');
   }
 
   _pool = neonClient(connectionString);
@@ -174,9 +174,10 @@ export const db = {
 };
 
 // Compatibility wrapper - returns db query builder with .from() method
-// This maintains compatibility with existing code that uses getSupabaseAdmin()
-export function getSupabaseAdmin() {
+export function getDb() {
   return {
     from: (table: string) => db.from(table)
   };
 }
+
+// Alias for backward compatibility
